@@ -2,7 +2,7 @@
 import pandas
 import csv
 import json
-from pandas.io.json import json_normalize
+from pandas import json_normalize
 import matplotlib.pyplot as plot
 from matplotlib.backends.backend_pdf import PdfPages
 from fpdf import FPDF
@@ -30,7 +30,11 @@ pdf = FPDF()
 pdf = FPDF(orientation="landscape")
 pdf.add_font('Arial', '', 'C:/Windows/fonts/arial.ttf', uni=True)  # added line
 #pdf.add_font("Arial", "", "./fonts/arial.ttf", uni=True)
-#pdf.set_doc_option('core_fonts_encoding', 'utf-8')
+#pdf.set_doc_option('core_fonts_encoding', 'utf-8')#
+#temp_mcq['choice_a'] = pandas.Series(list_of_choices_a, index=temp_mcq.index)
+#temp_mcq['choice_b'] = pandas.Series(list_of_choices_b, index=temp_mcq.index)
+#temp_mcq['choice_c'] = pandas.Series(list_of_choices_c, index=temp_mcq.index)
+#temp_mcq['choice_d'] = pandas.Series(list_of_choices_d, index=temp_mcq.index)
 pdf.add_page()
 pdf.set_font('Arial', size = 30)
 pdf.multi_cell(200,10,'LearnLab Summer School' + '\n\n\n', align = 'C')
@@ -40,60 +44,117 @@ pdf.set_font('Arial', size = 30)
 pdf.multi_cell(200,10,'Item Analysis (MCQs)' + '\n\n\n', align = 'C')
 #Step 1: mcq conversion to visualizations
 #finding the number of students who attempted each choice in the mcq dataframe and then adding those results to a plot
+
+# Initialize empty lists for choice ids
+list_of_choices_a_id = []
+list_of_choices_b_id = []
+list_of_choices_c_id = []
+list_of_choices_d_id = []
+list_of_questions = []
+list_of_choices_a = []
+list_of_choices_b = []
+list_of_choices_c = []
+list_of_choices_d = []
+
 for i in dict_of_mcqs:
     dict_of_mcqs[i].to_csv("All_mcqs" + str(i) + ".csv", index = False)
     temp_mcq = dict_of_mcqs[i]
-    list_of_questions = []
+    list_of_choices_a_id = []
+    list_of_choices_b_id = []
+    list_of_choices_c_id = []
+    list_of_choices_d_id = []
     list_of_choices_a = []
     list_of_choices_b = []
     list_of_choices_c = []
     list_of_choices_d = []
-    list_of_choice_a_id = []
-    list_of_choice_b_id = []
-    list_of_choice_c_id = []
-    list_of_choice_d_id = []
+    list_of_questions = [] 
+    temp_mcq['question'] = ''
     for y in temp_mcq.index:
         problem = temp_mcq.loc[y,"authoring"]["previewText"]
+        temp_mcq.loc[y, 'question'] = problem
+        list_of_questions.append(problem)
+        #list_of_questions.insert(y, problem)
+        #print(temp_mcq.loc[y, "choices"])
         
-        list_of_questions.insert(y, problem)
-        choice_a_id = temp_mcq.loc[y, "choices"][0]['id']
-        choice_a = temp_mcq.loc[y, "choices"][0]['content'][0]['children'][0]['text']
-        
-        choice_b_id = temp_mcq.loc[y, "choices"][1]['id']
-        choice_b = temp_mcq.loc[y, "choices"][1]['content'][0]['children'][0]['text']
-        if(len(temp_mcq.loc[y, "choices"]) > 2):
-            choice_c_id = temp_mcq.loc[y, "choices"][2]['id']
-            choice_c = temp_mcq.loc[y, "choices"][2]['content'][0]['children'][0]['text']
-            if(len(temp_mcq.loc[y, "choices"]) > 3):
-                choice_d_id = temp_mcq.loc[y, "choices"][3]['id']
-                choice_d = temp_mcq.loc[y, "choices"][3]['content'][0]['children'][0]['text']
-            else:
-                choice_d = "not present"
-                choice_d_id = " "
+        if isinstance(temp_mcq.loc[y, "choices"][0]['content'], dict):
+            choice_a_id = temp_mcq.loc[y, "choices"][0]['id']
+            choice_a = temp_mcq.loc[y, "choices"][0]['content']['model'][0]['children'][0]['text']
         else:
-            choice_c = 'not present'
-            choice_c_id = ''
-            choice_d = 'not present'
-            choice_d_id = ''
-            
-        list_of_choice_a_id.insert(y, choice_a_id)
-        list_of_choice_b_id.insert(y, choice_b_id)
-        list_of_choice_c_id.insert(y, choice_c_id)
-        list_of_choice_d_id.insert(y, choice_d_id)
-        list_of_choices_a.insert(y, choice_a)
-        list_of_choices_b.insert(y, choice_b)
-        list_of_choices_c.insert(y, choice_c)
-        list_of_choices_d.insert(y, choice_d)
- 
-    temp_mcq['choice_a_id'] = list_of_choice_a_id
-    temp_mcq['choice_b_id'] = list_of_choice_b_id
-    temp_mcq['choice_c_id'] = list_of_choice_c_id
-    temp_mcq['choice_d_id'] = list_of_choice_d_id
-    temp_mcq['choice_a'] = list_of_choices_a
-    temp_mcq['choice_b'] = list_of_choices_b
-    temp_mcq['choice_c'] = list_of_choices_c
-    temp_mcq['choice_d'] = list_of_choices_d
-    temp_mcq["question"] = list_of_questions
+            choice_a_id = temp_mcq.loc[y, "choices"][0]['id']
+            choice_a = temp_mcq.loc[y, "choices"][0]['content'][0]['children'][0]['text']
+
+        #print (choice_a)
+    
+        if isinstance(temp_mcq.loc[y, "choices"][1]['content'], dict):
+            choice_b_id = temp_mcq.loc[y, "choices"][1]['id']
+            choice_b = temp_mcq.loc[y, "choices"][1]['content']['model'][0]['children'][0]['text']
+        else:
+            choice_b_id = temp_mcq.loc[y, "choices"][1]['id']
+            choice_b = temp_mcq.loc[y, "choices"][1]['content'][0]['children'][0]['text']
+        #print (choice_b)
+    
+        if len(temp_mcq.loc[y, "choices"]) > 2:
+            if isinstance(temp_mcq.loc[y, "choices"][2]['content'], dict):
+                choice_c_id = temp_mcq.loc[y, "choices"][2]['id']
+                choice_c = temp_mcq.loc[y, "choices"][2]['content']['model'][0]['children'][0]['text']
+            else:
+                choice_c_id = temp_mcq.loc[y, "choices"][2]['id']
+                choice_c = temp_mcq.loc[y, "choices"][2]['content'][0]['children'][0]['text']
+        #print (choice_c)
+        
+        if len(temp_mcq.loc[y, "choices"]) > 3:
+            if isinstance(temp_mcq.loc[y, "choices"][3]['content'], dict):
+                choice_d_id = temp_mcq.loc[y, "choices"][3]['id']
+                choice_d = temp_mcq.loc[y, "choices"][3]['content']['model'][0]['children'][0]['text']
+            else:
+                choice_d = temp_mcq.loc[y, "choices"][3]['content'][0]['children'][0]['text']
+                choice_d_id = temp_mcq.loc[y, "choices"][3]['id']
+            #print (choice_d)
+
+    
+        else:
+            choice_d = "not present"
+            choice_d_id = ""
+    else:
+        choice_c = "not present"
+        choice_c_id = ""
+        choice_d = "not present"
+        choice_d_id = ""
+    
+        #list_of_choice_a_id.append(y, choice_a_id)
+        #list_of_choice_b_id.append(y, choice_b_id)
+        #list_of_choice_c_id.append(y, choice_c_id)
+        #list_of_choice_d_id.append(y, choice_d_id)
+        #list_of_choices_a.append(y, choice_a)
+        #list_of_choices_b.append(y, choice_b)
+        #list_of_choices_c.append(y, choice_c)
+        #   list_of_choices_d.append(y, choice_d)
+        #list_of_choices_a_id.insert(y, choice_a_id)
+        #list_of_choices_b_id.insert(y, choice_b_id)
+        #list_of_choices_c_id.insert(y, choice_c_id)
+        #list_of_choices_d_id.insert(y, choice_d_id)
+        #list_of_choices_a.insert(y, choice_a_id)
+        #list_of_choices_b.insert(y, choice_b_id)
+        #list_of_choices_c.insert(y, choice_c_id)
+        #list_of_choices_d.insert(y, choice_d_id)
+        
+    
+    temp_mcq['choice_a_id'] = temp_mcq['choices'].apply(lambda choices: choices[0]['id'] if len(choices) > 0 else '')
+    temp_mcq['choice_b_id'] = temp_mcq['choices'].apply(lambda choices: choices[1]['id'] if len(choices) > 1 else '')
+    temp_mcq['choice_c_id'] = temp_mcq['choices'].apply(lambda choices: choices[2]['id'] if len(choices) > 2 else '')
+    temp_mcq['choice_d_id'] = temp_mcq['choices'].apply(lambda choices: choices[3]['id'] if len(choices) > 3 else '')
+
+    temp_mcq['choice_a'] = temp_mcq['choices'].apply(lambda choices: choices[0]['content']['model'][0]['children'][0]['text'] if len(choices) > 0 and isinstance(choices[0]['content'], dict) else '')
+    temp_mcq['choice_b'] = temp_mcq['choices'].apply(lambda choices: choices[1]['content']['model'][0]['children'][0]['text'] if len(choices) > 1 and isinstance(choices[1]['content'], dict) else '')
+    temp_mcq['choice_c'] = temp_mcq['choices'].apply(lambda choices: choices[2]['content']['model'][0]['children'][0]['text'] if len(choices) > 2 and isinstance(choices[2]['content'], dict) else '')
+    temp_mcq['choice_d'] = temp_mcq['choices'].apply(lambda choices: choices[3]['content']['model'][0]['children'][0]['text'] if len(choices) > 3 and isinstance(choices[3]['content'], dict) else '')
+
+    print(temp_mcq["question"])
+    print(temp_mcq['choice_a'])
+    print(temp_mcq['choice_b'])
+    print(temp_mcq['choice_c'])
+    print(temp_mcq['choice_d'])
+    
     correct_choice = ""
     for x in temp_mcq.index:
         count_number_of_attempts = 0
@@ -108,50 +169,57 @@ for i in dict_of_mcqs:
                 count_number_of_attempts = count_number_of_attempts + 1
                 # if student selects option A, count number of option As to +1
                 #print(df3.loc[x, 'choice_a'].key)
-                if(temp_mcq.loc[y,'input'] == temp_mcq.loc[y,'choice_a_id']):
+                print(temp_mcq.loc[y,'input'])
+                if(temp_mcq.loc[y,'input'] == temp_mcq.at[y,'choice_a_id']):
                     count_a_choice = count_a_choice + 1
+                    print(temp_mcq.loc[y, 'Activity Score'])
                     if (temp_mcq.loc[y, 'Activity Score'] == 1):
                         correct_choice = "Choice A"
-                elif (temp_mcq.loc[y,'input'] == temp_mcq.loc[y,'choice_b_id']):
+                elif (temp_mcq.loc[y,'input'] == temp_mcq.at[y,'choice_b_id']):
                     count_b_choice = count_b_choice + 1
                     if (temp_mcq.loc[y, 'Activity Score'] == 1):
                         correct_choice = "Choice B"
-                elif (temp_mcq.loc[y,'input'] == temp_mcq.loc[y,'choice_c_id']):
+                elif (temp_mcq.loc[y,'input'] == temp_mcq.at[y,'choice_c_id']):
                     count_c_choice = count_c_choice + 1
                     if (temp_mcq.loc[y, 'Activity Score'] == 1):
                         correct_choice = "Choice C"
-                elif (temp_mcq.loc[y,'input'] == temp_mcq.loc[y,'choice_d_id']):
+                elif (temp_mcq.loc[y,'input'] == temp_mcq.at[y,'choice_d_id']):
                     count_d_choice = count_d_choice + 1
                     if (temp_mcq.loc[y, 'Activity Score'] == 1):
                         correct_choice = "Choice D"          
-            temp_mcq.loc[x,'count_a'] = count_a_choice
-            temp_mcq.loc[x,'count_b'] = count_b_choice
-            temp_mcq.loc[x,'count_c'] = count_c_choice
-            temp_mcq.loc[x,'count_d'] = count_d_choice
-            temp_mcq.loc[x,'correct_choice'] = correct_choice            
+        temp_mcq.loc[x,'count_a'] = count_a_choice
+        print(temp_mcq.loc[x,'count_a'])
+        temp_mcq.loc[x,'count_b'] = count_b_choice
+        print(temp_mcq.loc[x,'count_b'])
+        temp_mcq.loc[x,'count_c'] = count_c_choice
+        print(temp_mcq.loc[x,'count_c'])
+        temp_mcq.loc[x,'count_d'] = count_d_choice
+        print(temp_mcq.loc[x,'count_d'])
+        temp_mcq.loc[x,'correct_choice'] = correct_choice
+        print(temp_mcq.loc[x,'correct_choice'])
     temp_mcq.to_csv("All_mcqs4" +str(i) + ".csv", index = False)
     pdf.add_page()
     pdf.set_font('Arial', size = 10)
     pdf.multi_cell(150,10,temp_mcq['question'].values[0] + '\n', align = 'L')
-    pdf.multi_cell(150,10,'\u2022 '+ temp_mcq['choice_a'].values[0], align = 'L')
-    pdf.multi_cell(150,10,'\u2022 '+ temp_mcq['choice_b'].values[0], align = 'L')
-    pdf.multi_cell(150,10,'\u2022 '+ temp_mcq['choice_c'].values[0], align = 'L')
-    pdf.multi_cell(150,10,'\u2022 '+ temp_mcq['choice_d'].values[0], align = 'L')
+    pdf.multi_cell(150,10,'\u2022 '+ str(temp_mcq['choice_a'].astype(str).values[0]), align = 'L')
+    pdf.multi_cell(150,10,'\u2022 '+ str(temp_mcq['choice_b'].astype(str).values[0]), align = 'L')
+    pdf.multi_cell(150,10,'\u2022 '+ str(temp_mcq['choice_c'].astype(str).values[0]), align = 'L')
+    pdf.multi_cell(150,10,'\u2022 '+ str(temp_mcq['choice_d'].astype(str).values[0]), align = 'L')
     pdf.cell(200,10,'\n')
-    #fig, axis = plot.subplots(2)
-    plot.xlim(200,1200)
-    plot.ylim(0,300)
-    bar_data = {"Options": ['Option A','Option B','Option C','Option D'], "Number_of_Students": [temp_mcq['count_a'].values[0], temp_mcq['count_b'].values[0], temp_mcq['count_c'].values[0], temp_mcq['count_d'].values[0]]}
+    fig, ax = plot.subplots(figsize=(11,9))
+    ax.set_xlim(200,1200)
+    ax.set_ylim(0,300)
+    bar_data = {"Options": ['Option A','Option B','Option C','Option D'], "Number_of_Attempts": [temp_mcq['count_a'].values[0], temp_mcq['count_b'].values[0], temp_mcq['count_c'].values[0], temp_mcq['count_d'].values[0]]}
     dataFrame  = pandas.DataFrame(data = bar_data)
     plot.figure(figsize=(11,9))
     if(temp_mcq['correct_choice'].values[0] == "Choice A"):
-        dataFrame.plot.barh(x='Options', y='Number_of_Students', title="Student attempt for Q.", width = 0.5, color=['#5cb85c','#d9534f','#d9534f','#d9534f'])
+        dataFrame.plot.barh(x='Options', y='Number_of_Attempts', title="Student attempt for Q.", width = 0.5, color=['#5cb85c','#d9534f','#d9534f','#d9534f'])
     if(temp_mcq['correct_choice'].values[0] == "Choice B"):
-        dataFrame.plot.barh(x='Options', y='Number_of_Students', title="Student attempt for Q.", width = 0.5, color=['#d9534f','#5cb85c','#d9534f','#d9534f'])
+        dataFrame.plot.barh(x='Options', y='Number_of_Attempts', title="Student attempt for Q.", width = 0.5, color=['#d9534f','#5cb85c','#d9534f','#d9534f'])
     if(temp_mcq['correct_choice'].values[0] == "Choice C"):
-        dataFrame.plot.barh(x='Options', y='Number_of_Students', title="Student attempt for Q.", width = 0.5, color=['#d9534f','#d9534f','#5cb85c','#d9534f'])
+        dataFrame.plot.barh(x='Options', y='Number_of_Attempts', title="Student attempt for Q.", width = 0.5, color=['#d9534f','#d9534f','#5cb85c','#d9534f'])
     if(temp_mcq['correct_choice'].values[0] == "Choice D"):
-        dataFrame.plot.barh(x='Options', y='Number_of_Students', title="Student attempt for Q.", width = 0.5, color=['#d9534f','#d9534f','#d9534f','#5cb85c'])
+        dataFrame.plot.barh(x='Options', y='Number_of_Attempts', title="Student attempt for Q.", width = 0.5, color=['#d9534f','#d9534f','#d9534f','#5cb85c'])
     
     #plot.rcParams.update({'axes.facecolor':'lightgreen'})
     plot.title(temp_mcq['Activity Title'].values[0])
@@ -170,7 +238,7 @@ for i in dict_of_mcqs:
     #plot.savefig(img_buf, dpi=500, format = 'png')
     #img_buf.seek(0)
     plot.savefig(str(q_number)+'.png', dpi=500)
-    plot.close()
+    plot.close(fig)
     #convert to base64
     #data1 = img_buf.read()              # get data from file (BytesIO)
     #data1 = base64.b64encode(data1)  # convert to base64 as bytes
