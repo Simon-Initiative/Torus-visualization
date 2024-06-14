@@ -16,7 +16,7 @@ from PIL import Image, ImageDraw
 
 #reading the files in DataFrame(df)
 #df1 = pandas.read_csv("by_activity.csv")
-df2 = pandas.read_csv("raw_analytics.csv")
+df2 = pandas.read_csv("raw_analytics.csv", encoding='latin-1')
 df2 = df2.join(df2['Student Response'].apply(json.loads).apply(pandas.Series))
 df3 = df2.join(df2['Activity Content'].apply(json.loads).apply(pandas.Series))
 df_mcq = df3[df3['Activity Type'] == "Multiple Choice"]
@@ -28,7 +28,7 @@ df_cata = df_cata.sort_values(by = ['Activity ID'])
 dict_of_mcqs = {k: v for k, v in df_mcq.groupby('Activity ID')}
 pdf = FPDF()
 pdf = FPDF(orientation="landscape")
-pdf.add_font('Arial', '', 'C:/Windows/fonts/arial.ttf', uni=True)  # added line
+pdf.add_font('Arial', '', 'Arial.ttf', uni=True)  # added line
 #pdf.add_font("Arial", "", "./fonts/arial.ttf", uni=True)
 #pdf.set_doc_option('core_fonts_encoding', 'utf-8')#
 #temp_mcq['choice_a'] = pandas.Series(list_of_choices_a, index=temp_mcq.index)
@@ -37,7 +37,7 @@ pdf.add_font('Arial', '', 'C:/Windows/fonts/arial.ttf', uni=True)  # added line
 #temp_mcq['choice_d'] = pandas.Series(list_of_choices_d, index=temp_mcq.index)
 pdf.add_page()
 pdf.set_font('Arial', size = 30)
-pdf.multi_cell(200,10,'LearnLab Summer School' + '\n\n\n', align = 'C')
+pdf.multi_cell(200,10,'LE Fellowship Program' + '\n\n\n', align = 'C')
 pdf.multi_cell(200, 10, '\n'+'Analyzing OLI Data' + '\n', align = 'C')
 pdf.add_page()
 pdf.set_font('Arial', size = 30)
@@ -82,8 +82,7 @@ for i in dict_of_mcqs:
         else:
             choice_a_id = temp_mcq.loc[y, "choices"][0]['id']
             choice_a = temp_mcq.loc[y, "choices"][0]['content'][0]['children'][0]['text']
-
-        #print (choice_a)
+        print (choice_a)
     
         if isinstance(temp_mcq.loc[y, "choices"][1]['content'], dict):
             choice_b_id = temp_mcq.loc[y, "choices"][1]['id']
@@ -91,7 +90,7 @@ for i in dict_of_mcqs:
         else:
             choice_b_id = temp_mcq.loc[y, "choices"][1]['id']
             choice_b = temp_mcq.loc[y, "choices"][1]['content'][0]['children'][0]['text']
-        #print (choice_b)
+        print(choice_b)
     
         if len(temp_mcq.loc[y, "choices"]) > 2:
             if isinstance(temp_mcq.loc[y, "choices"][2]['content'], dict):
@@ -100,7 +99,7 @@ for i in dict_of_mcqs:
             else:
                 choice_c_id = temp_mcq.loc[y, "choices"][2]['id']
                 choice_c = temp_mcq.loc[y, "choices"][2]['content'][0]['children'][0]['text']
-        #print (choice_c)
+        print(choice_c)
         
         if len(temp_mcq.loc[y, "choices"]) > 3:
             if isinstance(temp_mcq.loc[y, "choices"][3]['content'], dict):
@@ -109,7 +108,6 @@ for i in dict_of_mcqs:
             else:
                 choice_d = temp_mcq.loc[y, "choices"][3]['content'][0]['children'][0]['text']
                 choice_d_id = temp_mcq.loc[y, "choices"][3]['id']
-            #print (choice_d)
 
     
         else:
@@ -139,22 +137,25 @@ for i in dict_of_mcqs:
         #list_of_choices_d.insert(y, choice_d_id)
         
     
+
     temp_mcq['choice_a_id'] = temp_mcq['choices'].apply(lambda choices: choices[0]['id'] if len(choices) > 0 else '')
     temp_mcq['choice_b_id'] = temp_mcq['choices'].apply(lambda choices: choices[1]['id'] if len(choices) > 1 else '')
     temp_mcq['choice_c_id'] = temp_mcq['choices'].apply(lambda choices: choices[2]['id'] if len(choices) > 2 else '')
     temp_mcq['choice_d_id'] = temp_mcq['choices'].apply(lambda choices: choices[3]['id'] if len(choices) > 3 else '')
 
-    temp_mcq['choice_a'] = temp_mcq['choices'].apply(lambda choices: choices[0]['content']['model'][0]['children'][0]['text'] if len(choices) > 0 and isinstance(choices[0]['content'], dict) else '')
-    temp_mcq['choice_b'] = temp_mcq['choices'].apply(lambda choices: choices[1]['content']['model'][0]['children'][0]['text'] if len(choices) > 1 and isinstance(choices[1]['content'], dict) else '')
-    temp_mcq['choice_c'] = temp_mcq['choices'].apply(lambda choices: choices[2]['content']['model'][0]['children'][0]['text'] if len(choices) > 2 and isinstance(choices[2]['content'], dict) else '')
-    temp_mcq['choice_d'] = temp_mcq['choices'].apply(lambda choices: choices[3]['content']['model'][0]['children'][0]['text'] if len(choices) > 3 and isinstance(choices[3]['content'], dict) else '')
+    temp_mcq['choice_a'] = temp_mcq['choices'].apply(lambda choices: choices[0]['content'][0]['children'][0]['text'] if len(choices) > 0 and isinstance(choices[0]['content'], list) else '')
+    temp_mcq['choice_b'] = temp_mcq['choices'].apply(lambda choices: choices[1]['content'][0]['children'][0]['text'] if len(choices) > 1 and isinstance(choices[1]['content'], list) else '')
+    temp_mcq['choice_c'] = temp_mcq['choices'].apply(lambda choices: choices[2]['content'][0]['children'][0]['text'] if len(choices) > 2 and isinstance(choices[2]['content'], list) else '')
+    temp_mcq['choice_d'] = temp_mcq['choices'].apply(lambda choices: choices[3]['content'][0]['children'][0]['text'] if len(choices) > 3 and isinstance(choices[3]['content'], list) else '')
 
-    print(temp_mcq["question"])
+
+    #temp_mcq['choice_a'] = temp_mcq['choices'].apply(lambda choices: choices[0]['content']['model'][0]['children'][0]['text'] if len(choices) > 0 and isinstance(choices[0]['content'], dict) else '')
+    #temp_mcq['choice_b'] = temp_mcq['choices'].apply(lambda choices: choices[1]['content']['model'][0]['children'][0]['text'] if len(choices) > 1 and isinstance(choices[1]['content'], dict) else '')
+    #temp_mcq['choice_c'] = temp_mcq['choices'].apply(lambda choices: choices[2]['content']['model'][0]['children'][0]['text'] if len(choices) > 2 and isinstance(choices[2]['content'], dict) else '')
+    #temp_mcq['choice_d'] = temp_mcq['choices'].apply(lambda choices: choices[3]['content']['model'][0]['children'][0]['text'] if len(choices) > 3 and isinstance(choices[3]['content'], dict) else '')
+
     print(temp_mcq['choice_a'])
     print(temp_mcq['choice_b'])
-    print(temp_mcq['choice_c'])
-    print(temp_mcq['choice_d'])
-    
     correct_choice = ""
     for x in temp_mcq.index:
         count_number_of_attempts = 0
@@ -169,10 +170,10 @@ for i in dict_of_mcqs:
                 count_number_of_attempts = count_number_of_attempts + 1
                 # if student selects option A, count number of option As to +1
                 #print(df3.loc[x, 'choice_a'].key)
-                print(temp_mcq.loc[y,'input'])
+                #print(temp_mcq.loc[y,'input'])
                 if(temp_mcq.loc[y,'input'] == temp_mcq.at[y,'choice_a_id']):
                     count_a_choice = count_a_choice + 1
-                    print(temp_mcq.loc[y, 'Activity Score'])
+                    #print(temp_mcq.loc[y, 'Activity Score'])
                     if (temp_mcq.loc[y, 'Activity Score'] == 1):
                         correct_choice = "Choice A"
                 elif (temp_mcq.loc[y,'input'] == temp_mcq.at[y,'choice_b_id']):
@@ -188,23 +189,38 @@ for i in dict_of_mcqs:
                     if (temp_mcq.loc[y, 'Activity Score'] == 1):
                         correct_choice = "Choice D"          
         temp_mcq.loc[x,'count_a'] = count_a_choice
-        print(temp_mcq.loc[x,'count_a'])
+        #print(temp_mcq.loc[x,'count_a'])
         temp_mcq.loc[x,'count_b'] = count_b_choice
-        print(temp_mcq.loc[x,'count_b'])
+        #print(temp_mcq.loc[x,'count_b'])
         temp_mcq.loc[x,'count_c'] = count_c_choice
-        print(temp_mcq.loc[x,'count_c'])
+        #print(temp_mcq.loc[x,'count_c'])
         temp_mcq.loc[x,'count_d'] = count_d_choice
-        print(temp_mcq.loc[x,'count_d'])
-        temp_mcq.loc[x,'correct_choice'] = correct_choice
-        print(temp_mcq.loc[x,'correct_choice'])
+        #print(temp_mcq.loc[x,'count_d']
+        temp_mcq.loc[x, 'correct_choice'] = correct_choice
+        #temp_mcq.loc[x,'correct_choice'] = correct_choice
+        if not isinstance(temp_mcq.loc[x, 'correct_choice'], str):
+            temp_mcq.loc[x, 'correct_choice'] = str(temp_mcq.loc[x, 'correct_choice'])
+
+        #temp_mcq.loc[x, 'correct_choice'] = temp_mcq.loc[x, 'correct_choice'].astype(str)
+        #print(temp_mcq.loc[x,'correct_choice'])
     temp_mcq.to_csv("All_mcqs4" +str(i) + ".csv", index = False)
     pdf.add_page()
     pdf.set_font('Arial', size = 10)
     pdf.multi_cell(150,10,temp_mcq['question'].values[0] + '\n', align = 'L')
+    # Inside the loop where you're adding questions and choices to the PDF
+    pdf.multi_cell(150, 10, 'Options:\n', align='L')  # Header for options
+
+# Adding each choice separately, assuming 'temp_mcq' contains the choices
+    #for choice in ['choice_a', 'choice_b', 'choice_c', 'choice_d']:
+        #choice_text = temp_mcq[choice].values[0]  # Assuming the choice column names are correct
+        #if choice_text.strip():  # Check if the choice is not empty or None
+            #pdf.multi_cell(150, 10, '\u2022 ' + str(choice_text), align='L')  # Add the choice
+
     pdf.multi_cell(150,10,'\u2022 '+ str(temp_mcq['choice_a'].astype(str).values[0]), align = 'L')
     pdf.multi_cell(150,10,'\u2022 '+ str(temp_mcq['choice_b'].astype(str).values[0]), align = 'L')
     pdf.multi_cell(150,10,'\u2022 '+ str(temp_mcq['choice_c'].astype(str).values[0]), align = 'L')
     pdf.multi_cell(150,10,'\u2022 '+ str(temp_mcq['choice_d'].astype(str).values[0]), align = 'L')
+    #pdf.multi_cell(150,10,'\u2022 '+ str(temp_mcq['choice_d'].astype(str).values[0]), align = 'L')
     pdf.cell(200,10,'\n')
     fig, ax = plot.subplots(figsize=(11,9))
     ax.set_xlim(200,1200)
@@ -252,8 +268,9 @@ for i in dict_of_mcqs:
 
 
 #Step 2: single responses table visualization
+
 dfs_singles = dict(tuple(df_single_response.groupby('Activity ID')))
-print("enter singles section")
+#print("enter singles section")
 pdf.add_page()
 pdf.set_font('Arial', size = 30)
 pdf.multi_cell(200,10,'Answers from Single Response Questions' + '\n\n\n', align = 'C')
@@ -267,11 +284,37 @@ for i, df in dfs_singles.items():
         response = df.loc[x,'input']
         single_responses.insert(x,response)
         x1=x1+1
-        print("response")
+        #print("response")
     pdf.set_font('Arial', size=10)
     pdf.multi_cell(200,10,question + '\n', align = 'L')
     for i in range(len(single_responses)):
-        pdf.multi_cell(200,10,single_responses[i], align = 'L', border = 1)
+        if single_responses[i] is not None:
+            pdf.multi_cell(200, 10, single_responses[i], align='L', border=1)
+            # This line is now properly indented within the if block
+
+#dfs_singles = dict(tuple(df_single_response.groupby('Activity ID')))
+#print("enter singles section")
+#pdf.add_page()
+#pdf.set_font('OpenSans', size = 30)
+#pdf.multi_cell(200,10,'Answers from Single Response Questions' + '\n\n\n', align = 'C')
+#for i, df in dfs_singles.items():
+#    pdf.add_page()
+#    question = []
+#   single_responses = []    
+#    x1 = 0
+#    for x in df.index:
+#        question = df.loc[x,'authoring']['previewText']
+#        response = df.loc[x,'input']
+#        single_responses.insert(x,response)
+#        x1=x1+1
+#        print("response")
+#    pdf.set_font('OpenSans', size=10)
+#    pdf.multi_cell(200,10,question + '\n', align = 'L')
+#    for i in range(len(single_responses)):
+#    if single_responses[i] is not None:
+#        pdf.multi_cell(200, 10, single_responses[i], align='L', border=1)
+#    #for i in range(len(single_responses)):
+        #pdf.multi_cell(200,10,single_responses[i], align = 'L', border = 1)
     #the_table = ax.table(cellText=df_table.values,colLabels=df_table.columns,loc='center',rowLoc='right', colLoc='right', cellLoc='left', edges = 'open')
     #the_table.set_fontsize(25)
     pdf.cell(200,10,'\n')
